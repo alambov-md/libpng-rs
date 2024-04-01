@@ -5,7 +5,7 @@ authors = ["Alexandr Lambov <alex.lambov.md@gmail.com>"]
 edition = "2021"
 description = "Helper package for compiling 'libpng' as a static library. Meant to be used as build dependency only."
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/alambov-md/libpng-src"
+repository = "https://github.com/alambov-md/libpng-rs"
 exclude = [
     ".gitignore",
     ".gitmodules",

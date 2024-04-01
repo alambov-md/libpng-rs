@@ -1,0 +1,10 @@
+[package]
+name = "bindgen-helper"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+bindgen = "0.69"
+guess_host_triple = "0.1"
+libpng-src = { workspace = true }
