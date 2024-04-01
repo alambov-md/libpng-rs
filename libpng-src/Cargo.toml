@@ -1,0 +1,27 @@
+[package]
+name = "libpng-src"
+version = "0.2.2"
+authors = ["Alexandr Lambov <alex.lambov.md@gmail.com>"]
+edition = "2021"
+description = "Helper package for compiling 'libpng' as a static library. Meant to be used as build dependency only."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/alambov-md/libpng-src"
+exclude = [
+    ".gitignore",
+    ".gitmodules",
+    ".github/",
+    ".vscode/",
+    "build/",
+    "libpng/.appveyor.yml",
+    "libpng/.editorconfig",
+    "libpng/.github/",
+    "libpng/.gitignore",
+    "libpng/.travis.yml",
+    "libpng/.yamllint.yml",
+    "libpng/ci/",
+    "libpng/example/",
+    "libpng/projects/",
+]
+
+[dev-dependencies]
+rand = "0.8"
