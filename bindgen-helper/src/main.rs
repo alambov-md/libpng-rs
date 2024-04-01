@@ -38,6 +38,7 @@ fn main() {
     let dest_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .unwrap()
+        .join("libpng-vendored-sys")
         .join("src")
         .join("lib.rs");
 

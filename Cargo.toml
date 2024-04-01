@@ -1,25 +1,8 @@
 [workspace] 
 
-members = ["bindgen-helper"] 
+members = ["bindgen-helper", "libpng-src", "libpng-vendored-sys"] 
 
 [workspace.dependencies]
 libc = "0.2"
-libpng-src = "0.2"
+libpng-src = { path = "libpng-src", version = "=0.2.2" }
 libz-sys = "=1.1.15"
-
-[package]
-name = "libpng-vendored-sys"
-version = "0.1.1"
-authors = ["Alexandr Lambov <alex.lambov.md@gmail.com>"]
-edition = "2021"
-description = "Helper package for vendoring 'libpng' as a static library with rudimentary FFI bindings."
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/alambov-md/libpng-vendored-sys"
-links = "png"
-
-[dependencies]
-libc = { workspace = true }
-libz-sys = { workspace = true }
-
-[build-dependencies]
-libpng-src = { workspace = true }
