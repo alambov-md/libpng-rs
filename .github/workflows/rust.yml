@@ -47,6 +47,8 @@ jobs:
       run: cargo test
     - name: Clean cargo cache 
       run: cargo clean
+    - name: Install iOS sim target
+      run: rustup targets add x86_64-apple-ios
     - name: Prebuild mobile test helper
       run: cargo build --package mobile-test-helper --target x86_64-apple-ios
     - name: Run iOS tests
