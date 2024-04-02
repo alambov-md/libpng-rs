@@ -1,5 +1,5 @@
 [workspace] 
-
+resolver = "2"
 members = ["bindgen-helper", "libpng-src", "libpng-vendored-sys"] 
 
 [workspace.dependencies]
