@@ -5,7 +5,7 @@
 //!
 //! Expected to work for:
 //! - Linux: `x86_64-unknown-linux-gnu`, `aarch64-unknown-linux-gnu` (no cross-compilation supported yet)
-//! - Windows: `x86_64-pc-windows-msvs`, `aarch644-pc-windows-msvs` (no cross-compilation supported yet)
+//! - Windows: `x86_64-pc-windows-msvc`, `aarch644-pc-windows-msvc` (no cross-compilation supported yet)
 //! - macOS: `x86_64-apple-darwin`, `aarch64-apple-darwin`
 //! - iOS, including simulators (cross-compilation from macOS host): `x86_64-apple-ios`, `aarch64-apple-ios`, `aarch64-apple-ios-sim`
 
