@@ -31,12 +31,12 @@ jobs:
       uses: actions/checkout@v3
       with:
         submodules: recursive
-    - name: Run tests
+    - name: Run Cargo tests
       run: cargo test
 
   test-macos:
 
-    runs-on: macos-11
+    runs-on: macos-12
 
     steps:
     - name: Checkout with submodules
@@ -45,3 +45,15 @@ jobs:
         submodules: recursive
     - name: Run tests
       run: cargo test
+    - name: Clean cargo cache 
+      run: cargo clean
+    - name: Install iOS targets
+      run: rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios
+    - name: Check buildability for iOS
+      run: |
+        cargo build --package mobile-test-helper --target aarch64-apple-ios
+        cargo build --package mobile-test-helper --target aarch64-apple-ios-sim
+        cargo build --package mobile-test-helper --target x86_64-apple-ios
+    - name: Run end-to-end test
+      working-directory: ./IosTests
+      run: xcodebuild test -scheme IosTests -destination "platform=iOS Simulator,OS=16.2,name=iPhone 8"

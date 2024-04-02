@@ -8,9 +8,14 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/alambov-md/libpng-rs"
 links = "png"
 
+[features]
+default = ["link-libz"]
+link-libz = ["dep:libz-sys"]
+link-libz-static = ["libz-sys/static"]
+
 [dependencies]
 libc = { workspace = true }
-libz-sys = { workspace = true }
+libz-sys = { version = "=1.1.16", optional = true }
 
 [build-dependencies]
 libpng-src = { workspace = true }

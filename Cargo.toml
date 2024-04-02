@@ -1,8 +1,7 @@
 [workspace] 
 resolver = "2"
-members = ["bindgen-helper", "libpng-src", "libpng-vendored-sys"] 
+members = ["bindgen-helper", "libpng-src", "libpng-vendored-sys", "mobile-test-helper"] 
 
 [workspace.dependencies]
 libc = "0.2"
 libpng-src = { path = "libpng-src", version = "=0.2.2" }
-libz-sys = "=1.1.15"
