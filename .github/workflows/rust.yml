@@ -47,10 +47,13 @@ jobs:
       run: cargo test
     - name: Clean cargo cache 
       run: cargo clean
-    - name: Install iOS sim target
-      run: rustup target add x86_64-apple-ios
-    - name: Prebuild mobile test helper
-      run: cargo build --package mobile-test-helper --target x86_64-apple-ios
-    - name: Run iOS tests
+    - name: Install iOS targets
+      run: rustup target add aarch6464-apple-ios aarch6464-apple-ios-sim x86_64-apple-ios
+    - name: Check buildability for iOS
+      run: |
+        cargo build --package mobile-test-helper --target aarch64-apple-ios
+        cargo build --package mobile-test-helper --target aarch64-apple-ios-sim
+        cargo build --package mobile-test-helper --target x86_64-apple-ios
+    - name: Run end-to-end test
       working-directory: ./IosTests
-      run: xcodebuild test -scheme IosTests -destination "name=iPhone 15"
+      run: xcodebuild test -scheme IosTests -destination "platform=iOS Simulator,OS=15.0,name=iPhone 8"
