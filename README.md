@@ -2,6 +2,7 @@
 Cargo packages suite for 'libpng' library usage in Rust.
 
 ## Content
+Main packages in the workspace are:
 * [libpng-src](libpng-src/README.md) - Helper package for compiling libpng into a static library.
 * [libpng-vendored-sys](libpng-vendored-sys/README.md) - `-sys` package for vendoring `libpng` as static library.
 

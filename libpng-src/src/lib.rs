@@ -244,22 +244,29 @@ fn common_cmake_options() -> Vec<OsString> {
 }
 
 fn macos_specific_cmake_options(target_str: &str) -> Result<Vec<OsString>, Box<dyn Error>> {
+    let macos_minimum_vers_str = "-DCMAKE_OSX_DEPLOYMENT_TARGET=12.0";
+    let arm_arch_str = "-DCMAKE_OSX_ARCHITECTURES=arm64";
+    let x86_64_arch_str = "-DCMAKE_OSX_ARCHITECTURES=x86_64";
+    let ios_minimum_vers_str = "-DCMAKE_OSX_DEPLOYMENT_TARGET=15.0";
+    let ios_sysname_str = "-DCMAKE_SYSTEM_NAME=iOS";
+    let ios_sim_sysroot_str = "-DCMAKE_OSX_SYSROOT=iphonesimulator";
+    let no_framework_str = "-DPNG_FRAMEWORK=OFF";
+
     match target_str {
-        "aarch64-apple-darwin" => Ok(vec!["-DCMAKE_OSX_ARCHITECTURES=arm64"]),
-        "x86_64-apple-darwin" => Ok(vec!["-DCMAKE_OSX_ARCHITECTURES=x86_64"]),
-        "aarch64-apple-ios" => Ok(vec![
-            "-DCMAKE_SYSTEM_NAME=iOS",
-            "-DCMAKE_OSX_ARCHITECTURES=arm64",
-        ]),
+        "aarch64-apple-darwin" => Ok(vec![macos_minimum_vers_str, arm_arch_str]),
+        "x86_64-apple-darwin" => Ok(vec![macos_minimum_vers_str, x86_64_arch_str]),
+        "aarch64-apple-ios" => Ok(vec![ios_minimum_vers_str, ios_sysname_str, arm_arch_str]),
         "aarch64-apple-ios-sim" => Ok(vec![
-            "-DCMAKE_SYSTEM_NAME=iOS",
-            "-DCMAKE_OSX_ARCHITECTURES=arm64",
-            "-DCMAKE_OSX_SYSROOT=iphonesimulator",
+            ios_minimum_vers_str,
+            ios_sysname_str,
+            arm_arch_str,
+            ios_sim_sysroot_str,
         ]),
         "x86_64-apple-ios" => Ok(vec![
-            "-DCMAKE_SYSTEM_NAME=iOS",
-            "-DCMAKE_OSX_ARCHITECTURES=x86_64",
-            "-DCMAKE_OSX_SYSROOT=iphonesimulator",
+            ios_minimum_vers_str,
+            ios_sysname_str,
+            x86_64_arch_str,
+            ios_sim_sysroot_str,
         ]),
         _ => Err(format!(
             "Unsupported target: {}, for host OS: {}",
@@ -269,7 +276,7 @@ fn macos_specific_cmake_options(target_str: &str) -> Result<Vec<OsString>, Box<d
     }
     .map(|mut str_vec| {
         // Don't assemble the framework as it has no sense for Rust
-        str_vec.push("-DPNG_FRAMEWORK=OFF");
+        str_vec.push(no_framework_str);
         str_vec
     })
     .map(|str_vec| str_vec.into_iter().map(OsString::from).collect())
