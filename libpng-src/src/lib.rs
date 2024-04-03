@@ -1,7 +1,7 @@
 //! Helper Cargo package for compiling [libpng](https://github.com/pnggroup/libpng) into a static C library.
 //!
 //! Meant to be used as build dependency for dufferent `-sys` or `-vendored` packages.
-//! Does not provide directly usable `libpng` functionality or bindings.
+//! Does not provide directly usable **libpng** functionality or bindings.
 //!
 //! Expected to work for:
 //! - Linux: `x86_64-unknown-linux-gnu`, `aarch64-unknown-linux-gnu` (no cross-compilation supported yet)
@@ -16,10 +16,11 @@ use std::{
     fs::{self, copy, create_dir, create_dir_all, remove_dir_all},
     path::{Path, PathBuf},
     process::Command,
+    str::FromStr,
     vec::Vec,
 };
 
-/// Version of the `libpng` library
+/// Version of the **libpng** library
 pub const LIBPNG_VERSION: &str = "1.6.43";
 
 /// Represents result of complete building.
@@ -36,7 +37,7 @@ pub struct Artifacts {
 
 /// Returns the path to the source directory without any modifications.
 ///
-/// Use it to generate bindings to the `libpng` if needed.
+/// Use it to generate bindings to the **libpng** if needed.
 /// The directory does not contain 'pnglibconf.h', generated at build time.
 pub fn source_path() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("libpng")
@@ -153,7 +154,7 @@ pub fn build_artifact(target_str: &str, working_dir: &Path) -> Result<Artifacts,
     })
 }
 
-/// Statically compiles `libpng` library and returns the path to the compiled artifact.
+/// Statically compiles **libpng** library and returns the path to the compiled artifact.
 /// Should be used when include headers are not needed.
 /// Would create working directory if missing, would remove its previous content if not empty.
 /// # Usage Example
@@ -204,34 +205,55 @@ pub fn compile_lib(target_str: &str, working_dir: &Path) -> Result<PathBuf, Box<
     artifact_path(working_dir)
 }
 
+trait TryIntoVecOsString<T, E> {
+    type Error;
+
+    fn try_into_os_string(self) -> Result<Vec<OsString>, Self::Error>;
+}
+
+impl TryIntoVecOsString<Vec<&str>, Box<dyn Error>> for Vec<&str> {
+    type Error = Box<dyn Error>;
+
+    fn try_into_os_string(self) -> Result<Vec<OsString>, Self::Error> {
+        let mut result_vec: Vec<OsString> = Vec::new();
+
+        for str_e in self {
+            result_vec.push(OsString::from_str(str_e)?);
+        }
+
+        Ok(result_vec)
+    }
+}
+
 fn allowed_targets_for_host() -> Vec<&'static str> {
     match (HOST_OS, HOST_ARCH) {
-        ("macos", _) => vec![
+        ("macos", _) => [vec![
             "aarch64-apple-darwin",
             "x86_64-apple-darwin",
             "aarch64-apple-ios",
             "aarch64-apple-ios-sim",
             "x86_64-apple-ios",
-        ],
-        ("linux", "x86_64") => vec!["x86_64-unknown-linux-gnu"],
+        ], androd_targets()].concat(),
+        ("linux", "x86_64") => [vec!["x86_64-unknown-linux-gnu"], androd_targets()].concat(),
         ("linux", "aarch64") => vec!["aarch64-unknown-linux-gnu"],
-        ("windows", "x86_64") => vec!["x86_64-pc-windows-msvc"],
+        ("windows", "x86_64") => [vec!["x86_64-pc-windows-msvc"], androd_targets()].concat(),
         ("windows", "aarch64") => vec!["aarch64-pc-windows-msvc"],
         _ => vec![],
     }
 }
 
+fn androd_targets() -> Vec<&'static str> {
+    vec![
+        "aarch64-linux-android",
+        "armv7-linux-androideabi",
+        "x86_64-linux-android",
+        "i686-linux-android",
+    ]
+}
+
 fn cmake_options(target_str: &str) -> Result<Vec<OsString>, Box<dyn Error>> {
     let mut options = common_cmake_options();
-
-    let mut specific_options = match HOST_OS {
-        "macos" => macos_specific_cmake_options(target_str),
-        "windows" => windows_specific_cmake_options(),
-        "linux" => Ok(vec![]),
-        _ => Err(format!("Unsupported host OS: {}", HOST_OS).into()),
-    }?;
-
-    options.append(&mut specific_options);
+    options.append(&mut target_specific_cmake_options(target_str)?);
 
     Ok(options)
 }
@@ -243,43 +265,72 @@ fn common_cmake_options() -> Vec<OsString> {
     ]
 }
 
-fn macos_specific_cmake_options(target_str: &str) -> Result<Vec<OsString>, Box<dyn Error>> {
-    let macos_minimum_vers_str = "-DCMAKE_OSX_DEPLOYMENT_TARGET=12.0";
-    let arm_arch_str = "-DCMAKE_OSX_ARCHITECTURES=arm64";
-    let x86_64_arch_str = "-DCMAKE_OSX_ARCHITECTURES=x86_64";
-    let ios_minimum_vers_str = "-DCMAKE_OSX_DEPLOYMENT_TARGET=15.0";
+fn target_specific_cmake_options(target_str: &str) -> Result<Vec<OsString>, Box<dyn Error>> {
+    let arch_apple_arm_str = "-DCMAKE_OSX_ARCHITECTURES=arm64";
+    let arch_apple_x86_64_str = "-DCMAKE_OSX_ARCHITECTURES=x86_64";
     let ios_sysname_str = "-DCMAKE_SYSTEM_NAME=iOS";
     let ios_sim_sysroot_str = "-DCMAKE_OSX_SYSROOT=iphonesimulator";
     let no_framework_str = "-DPNG_FRAMEWORK=OFF";
+    let android_sysname_str = "-DCMAKE_SYSTEM_NAME=Android";
+    let arch_android_arm = "-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a";
+    let arch_android_arm64 = "-DCMAKE_ANDROID_ARCH_ABI=arm64-v8a";
+    let arch_android_x86 = "-DCMAKE_ANDROID_ARCH_ABI=x86";
+    let arch_android_x86_64 = "-DCMAKE_ANDROID_ARCH_ABI=x86_64";
 
-    match target_str {
-        "aarch64-apple-darwin" => Ok(vec![macos_minimum_vers_str, arm_arch_str]),
-        "x86_64-apple-darwin" => Ok(vec![macos_minimum_vers_str, x86_64_arch_str]),
-        "aarch64-apple-ios" => Ok(vec![ios_minimum_vers_str, ios_sysname_str, arm_arch_str]),
-        "aarch64-apple-ios-sim" => Ok(vec![
-            ios_minimum_vers_str,
-            ios_sysname_str,
-            arm_arch_str,
-            ios_sim_sysroot_str,
-        ]),
-        "x86_64-apple-ios" => Ok(vec![
-            ios_minimum_vers_str,
-            ios_sysname_str,
-            x86_64_arch_str,
-            ios_sim_sysroot_str,
-        ]),
-        _ => Err(format!(
-            "Unsupported target: {}, for host OS: {}",
-            target_str, HOST_OS
-        )
-        .into()),
+    if target_str == "aarch64-apple-darwin" {
+        return vec![arch_apple_arm_str, no_framework_str].try_into_os_string();
     }
-    .map(|mut str_vec| {
-        // Don't assemble the framework as it has no sense for Rust
-        str_vec.push(no_framework_str);
-        str_vec
-    })
-    .map(|str_vec| str_vec.into_iter().map(OsString::from).collect())
+
+    if target_str == "x86_64-apple-darwin" {
+        return vec![arch_apple_x86_64_str, no_framework_str].try_into_os_string();
+    }
+
+    if target_str == "aarch64-apple-ios" {
+        return vec![ios_sysname_str, arch_apple_arm_str, no_framework_str].try_into_os_string();
+    }
+
+    if target_str == "aarch64-apple-ios-sim" {
+        return vec![
+            ios_sysname_str,
+            arch_apple_arm_str,
+            ios_sim_sysroot_str,
+            no_framework_str,
+        ]
+        .try_into_os_string();
+    }
+
+    if target_str == "x86_64-apple-ios" {
+        return vec![
+            ios_sysname_str,
+            arch_apple_x86_64_str,
+            ios_sim_sysroot_str,
+            no_framework_str,
+        ]
+        .try_into_os_string();
+    }
+
+    if target_str == "armv7-linux-androideabi" {
+        return vec![android_sysname_str, arch_android_arm].try_into_os_string();
+    }
+
+    if target_str == "aarch64-linux-android" {
+        return vec![android_sysname_str, arch_android_arm64].try_into_os_string();
+    }
+
+    if target_str == "i686-linux-android" {
+        return vec![android_sysname_str, arch_android_x86].try_into_os_string();
+    }
+
+    if target_str == "x86_64-linux-android" {
+        return vec![android_sysname_str, arch_android_x86_64].try_into_os_string();
+    }
+
+    if target_str == "x86_64-pc-windows-msvc" || target_str == "aarch64-pc-windows-msvc" {
+        return windows_specific_cmake_options();
+    }
+
+    // Linux
+    return Ok(vec![]);
 }
 
 fn windows_specific_cmake_options() -> Result<Vec<OsString>, Box<dyn Error>> {

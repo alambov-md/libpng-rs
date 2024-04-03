@@ -5,3 +5,4 @@ members = ["bindgen-helper", "libpng-src", "libpng-vendored-sys", "mobile-test-h
 [workspace.dependencies]
 libc = "0.2"
 libpng-src = { path = "libpng-src", version = "=0.2.3" }
+libpng-vendored-sys = { path = "libpng-vendored-sys", version = "=0.1.2" }
