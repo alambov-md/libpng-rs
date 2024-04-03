@@ -8,6 +8,8 @@
 //! - Windows: `x86_64-pc-windows-msvc`, `aarch644-pc-windows-msvc` (no cross-compilation supported yet)
 //! - macOS: `x86_64-apple-darwin`, `aarch64-apple-darwin`
 //! - iOS, including simulators (cross-compilation from macOS host): `x86_64-apple-ios`, `aarch64-apple-ios`, `aarch64-apple-ios-sim`
+//! - Android (cross-compilation from Linux, macOS or Windows hosts): `armv7-linux-androideabi`, `aarch64-linux-android`,
+//! `i686-linux-android`, `x86_64-linux-android`
 
 use std::{
     env::consts::{ARCH as HOST_ARCH, OS as HOST_OS},
@@ -150,7 +152,7 @@ pub fn build_artifact(target_str: &str, working_dir: &Path) -> Result<Artifacts,
         root_dir,
         include_dir,
         lib_dir,
-        link_name: link_name(library_filename),
+        link_name: link_name(library_filename, target_str),
     })
 }
 
@@ -227,13 +229,17 @@ impl TryIntoVecOsString<Vec<&str>, Box<dyn Error>> for Vec<&str> {
 
 fn allowed_targets_for_host() -> Vec<&'static str> {
     match (HOST_OS, HOST_ARCH) {
-        ("macos", _) => [vec![
-            "aarch64-apple-darwin",
-            "x86_64-apple-darwin",
-            "aarch64-apple-ios",
-            "aarch64-apple-ios-sim",
-            "x86_64-apple-ios",
-        ], androd_targets()].concat(),
+        ("macos", _) => [
+            vec![
+                "aarch64-apple-darwin",
+                "x86_64-apple-darwin",
+                "aarch64-apple-ios",
+                "aarch64-apple-ios-sim",
+                "x86_64-apple-ios",
+            ],
+            androd_targets(),
+        ]
+        .concat(),
         ("linux", "x86_64") => [vec!["x86_64-unknown-linux-gnu"], androd_targets()].concat(),
         ("linux", "aarch64") => vec!["aarch64-unknown-linux-gnu"],
         ("windows", "x86_64") => [vec!["x86_64-pc-windows-msvc"], androd_targets()].concat(),
@@ -266,71 +272,70 @@ fn common_cmake_options() -> Vec<OsString> {
 }
 
 fn target_specific_cmake_options(target_str: &str) -> Result<Vec<OsString>, Box<dyn Error>> {
-    let arch_apple_arm_str = "-DCMAKE_OSX_ARCHITECTURES=arm64";
-    let arch_apple_x86_64_str = "-DCMAKE_OSX_ARCHITECTURES=x86_64";
-    let ios_sysname_str = "-DCMAKE_SYSTEM_NAME=iOS";
-    let ios_sim_sysroot_str = "-DCMAKE_OSX_SYSROOT=iphonesimulator";
-    let no_framework_str = "-DPNG_FRAMEWORK=OFF";
-    let android_sysname_str = "-DCMAKE_SYSTEM_NAME=Android";
-    let arch_android_arm = "-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a";
-    let arch_android_arm64 = "-DCMAKE_ANDROID_ARCH_ABI=arm64-v8a";
-    let arch_android_x86 = "-DCMAKE_ANDROID_ARCH_ABI=x86";
-    let arch_android_x86_64 = "-DCMAKE_ANDROID_ARCH_ABI=x86_64";
-
-    if target_str == "aarch64-apple-darwin" {
-        return vec![arch_apple_arm_str, no_framework_str].try_into_os_string();
+    if target_str.contains("apple") {
+        return apple_specific_cmake_options(target_str);
     }
 
-    if target_str == "x86_64-apple-darwin" {
-        return vec![arch_apple_x86_64_str, no_framework_str].try_into_os_string();
+    if target_str.contains("android") {
+        return androdid_specific_cmake_options(target_str, HOST_OS);
     }
 
-    if target_str == "aarch64-apple-ios" {
-        return vec![ios_sysname_str, arch_apple_arm_str, no_framework_str].try_into_os_string();
-    }
-
-    if target_str == "aarch64-apple-ios-sim" {
-        return vec![
-            ios_sysname_str,
-            arch_apple_arm_str,
-            ios_sim_sysroot_str,
-            no_framework_str,
-        ]
-        .try_into_os_string();
-    }
-
-    if target_str == "x86_64-apple-ios" {
-        return vec![
-            ios_sysname_str,
-            arch_apple_x86_64_str,
-            ios_sim_sysroot_str,
-            no_framework_str,
-        ]
-        .try_into_os_string();
-    }
-
-    if target_str == "armv7-linux-androideabi" {
-        return vec![android_sysname_str, arch_android_arm].try_into_os_string();
-    }
-
-    if target_str == "aarch64-linux-android" {
-        return vec![android_sysname_str, arch_android_arm64].try_into_os_string();
-    }
-
-    if target_str == "i686-linux-android" {
-        return vec![android_sysname_str, arch_android_x86].try_into_os_string();
-    }
-
-    if target_str == "x86_64-linux-android" {
-        return vec![android_sysname_str, arch_android_x86_64].try_into_os_string();
-    }
-
-    if target_str == "x86_64-pc-windows-msvc" || target_str == "aarch64-pc-windows-msvc" {
+    if target_str.contains("windows") {
         return windows_specific_cmake_options();
     }
 
     // Linux
     return Ok(vec![]);
+}
+
+fn apple_specific_cmake_options(target_str: &str) -> Result<Vec<OsString>, Box<dyn Error>> {
+    let rust_arch = target_str.split('-').next().unwrap();
+
+    let cmake_arch = match rust_arch {
+        "aarch64" => Ok("arm64"),
+        "x86_64" => Ok("x86_64"),
+        _ => Err(format!(
+            "Unsupported target: {target_str}, for host OS: {HOST_OS}, arch: {HOST_ARCH}"
+        )),
+    }?;
+
+    let arch_param_sting = format!("-DCMAKE_OSX_ARCHITECTURES={cmake_arch}");
+
+    let mut param_vec = vec![arch_param_sting.as_str(), "-DPNG_FRAMEWORK=OFF"];
+
+    // Compile for iOS, not macOS
+    if target_str.contains("ios") {
+        param_vec.push("-DCMAKE_SYSTEM_NAME=iOS");
+    }
+
+    // Compile for iOS sim
+    if target_str == "aarch64-apple-ios-sim" || target_str == "x86_64-apple-ios" {
+        param_vec.push("-DCMAKE_OSX_SYSROOT=iphonesimulator");
+    }
+
+    param_vec.try_into_os_string()
+}
+
+fn androdid_specific_cmake_options(target_str: &str, host_os_str: &str) -> Result<Vec<OsString>, Box<dyn Error>> {
+    let build_arch = match target_str {
+        "armv7-linux-androideabi" => Ok("armeabi-v7a"),
+        "aarch64-linux-android" => Ok("arm64-v8a"),
+        "i686-linux-android" => Ok("x86"),
+        "x86_64-linux-android" => Ok("x86_64"),
+        _ => Err(format!(
+            "Unsupported target: {target_str}, for host OS: {HOST_OS}, arch: {HOST_ARCH}"
+        )),
+    }?;
+
+    let arch_param_string = format!("-DCMAKE_ANDROID_ARCH_ABI={build_arch}");
+
+    let mut param_vec = vec!["-DCMAKE_SYSTEM_NAME=Android", arch_param_string.as_str()];
+
+    if host_os_str == "windows" {
+        param_vec.push("-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY");
+    }
+
+    param_vec.try_into_os_string()
 }
 
 fn windows_specific_cmake_options() -> Result<Vec<OsString>, Box<dyn Error>> {
@@ -350,13 +355,11 @@ fn execute(command: &str, args: &[OsString], cwd: &Path) -> Result<(), Box<dyn E
     let output = Command::new(command).current_dir(cwd).args(args).output()?;
 
     if !output.status.success() {
-        let message = format!(
+        Err(format!(
             "Command '{}' failed with status code {}\nError: {}",
             command,
             output.status.code().unwrap_or(-1),
-            String::from_utf8_lossy(&output.stderr)
-        );
-        return Err(message.into());
+            String::from_utf8_lossy(&output.stderr)))?;
     }
 
     let args_vec: Vec<&str> = args
@@ -385,11 +388,12 @@ fn artifact_path(working_dir: &Path) -> Result<PathBuf, Box<dyn Error>> {
     Ok(artifact_path)
 }
 
-fn link_name(file_name: String) -> String {
-    let file_name = file_name.split('.').next().unwrap();
+fn link_name(file_name: String, target_str: &str) -> String {
+    let mut file_name = file_name.split('.').next().unwrap();
 
-    #[cfg(not(target_os = "windows"))]
-    let file_name = file_name.trim_start_matches("lib");
+    if !target_str.contains("windows") {
+        file_name = file_name.trim_start_matches("lib");
+    }
 
     file_name.to_string()
 }
