@@ -34,7 +34,7 @@ jobs:
     - name: Run Cargo tests
       run: cargo test
 
-  test-macos:
+  test-macos-and-ios:
 
     runs-on: macos-12
 
@@ -57,3 +57,22 @@ jobs:
     - name: Run end-to-end test
       working-directory: ./IosTests
       run: xcodebuild test -scheme IosTests -destination "platform=iOS Simulator,OS=16.2,name=iPhone 8"
+  
+  test-android:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout with submodules
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    - name: Check buildability for Android
+      run: |
+        cargo ndk -t armeabi-v7a -t arm64-v8a -t x86 -t x86_64 \
+          -o AndroidTests/app/src/main/jniLibs \
+          build -p mobile-test-helper
+    - name: Run end-to-end test
+      working-directory: ./AndroidTests
+      run: ./gradlew connectedAndroidTest
+
