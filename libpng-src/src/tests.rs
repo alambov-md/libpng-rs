@@ -73,19 +73,30 @@ fn test_native() -> Result<(), Box<dyn Error>> {
 }
 
 #[test]
-fn test_link_name() {
+fn test_link_name_not_win() {
     let assert_combination = |file_name: &str, expectation: &str| {
-        assert_eq!(link_name(file_name.to_string()), expectation.to_string())
+        assert_eq!(
+            link_name(file_name.to_string(), "linux"),
+            expectation.to_string()
+        )
     };
 
-    if cfg!(target_os = "windows") {
-        assert_combination("libpng.lib", "libpng");
-        assert_combination("libpng16.lib", "libpng16");
-        assert_combination("libpng_static.lib", "libpng_static");
-        assert_combination("libpng16_static.lib", "libpng16_static");
-    } else {
-        assert_combination("libpng.a", "png");
-        assert_combination("libpng.16.a", "png");
-        assert_combination("libpng16.a", "png16");
-    }
+    assert_combination("libpng.a", "png");
+    assert_combination("libpng.16.a", "png");
+    assert_combination("libpng16.a", "png16");
+}
+
+#[test]
+fn test_link_name_win() {
+    let assert_combination = |file_name: &str, expectation: &str| {
+        assert_eq!(
+            link_name(file_name.to_string(), "windows"),
+            expectation.to_string()
+        )
+    };
+
+    assert_combination("libpng.lib", "libpng");
+    assert_combination("libpng16.lib", "libpng16");
+    assert_combination("libpng_static.lib", "libpng_static");
+    assert_combination("libpng16_static.lib", "libpng16_static");
 }

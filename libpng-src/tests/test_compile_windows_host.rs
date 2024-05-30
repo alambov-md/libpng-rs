@@ -23,6 +23,6 @@ fn test_build_and_bindgen_x86_64() {
 
 #[cfg(target_arch = "aarch64")]
 #[test]
-fn test_build_and_bindgen_x86_64() {
+fn test_build_and_bindgen_aarch64() {
     test_artifact_build("aarch64-pc-windows-msvc")
 }

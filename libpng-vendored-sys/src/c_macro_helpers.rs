@@ -1,5 +1,5 @@
 #![allow(non_snake_case)]
-use libpng_vendored_sys::{
+use crate::{
     png_image, PNG_FORMAT_FLAG_ALPHA, PNG_FORMAT_FLAG_COLOR, PNG_FORMAT_FLAG_COLORMAP,
     PNG_FORMAT_FLAG_LINEAR,
 };
@@ -20,7 +20,7 @@ pub fn PNG_IMAGE_PIXEL_(test: impl FnOnce(u32) -> usize, fmt: u32) -> usize {
     if (fmt & PNG_FORMAT_FLAG_COLORMAP) > 0 {
         1
     } else {
-        test(fmt) as usize
+        test(fmt)
     }
 }
 

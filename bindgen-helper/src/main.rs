@@ -1,6 +1,5 @@
 use std::{env::temp_dir, fs::write, path::PathBuf};
 
-use bindgen;
 use guess_host_triple::guess_host_triple;
 use libpng_src::build_artifact;
 
@@ -8,9 +7,9 @@ const MANUAL_BEGINNING: &str = "//! Cargo package for compiling [libpng](https:/
 //!
 //! Main goal of the package is providing static library for linking with other C code, like versions of [Leptonica](http://www.leptonica.org/).
 //! It provides just rudimentary FFI bindings. More sophisticated bindings would be provided in a separate crate.
-//! If you need to bind `libpng` with the Rust code directly, you should write your own bindings.
+//! If you need to bind **libpng** with the Rust code directly, you should write your own bindings.
 //!
-//! Does not translate C macros from `libpng`.
+//! Does not translate C macros from **libpng**.
 //!
 //! Rust FFI bindings not documented. For information on underlying C functions and constants is provided here:
 //! https://github.com/pnggroup/libpng/blob/libpng16/libpng-manual.txt
@@ -21,9 +20,14 @@ const MANUAL_BEGINNING: &str = "//! Cargo package for compiling [libpng](https:/
 
 use libc::{time_t, tm, FILE};
 
+#[cfg(feature = \"link-libz\")]
+#[allow(clippy::single_component_path_imports)]
 #[allow(unused_imports)]
 // Used for linking only
 use libz_sys;
+
+mod c_macro_helpers;
+pub use c_macro_helpers::*;
 
 ";
 

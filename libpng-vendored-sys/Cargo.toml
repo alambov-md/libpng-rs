@@ -4,6 +4,7 @@ version = "0.1.2"
 authors = ["Alexandr Lambov <alex.lambov.md@gmail.com>"]
 edition = "2021"
 description = "Helper package for vendoring 'libpng' as a static library with rudimentary FFI bindings."
+documentation = "https://docs.rs/libpng-src/latest/libpng_vendored_sys"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/alambov-md/libpng-rs"
 links = "png"
@@ -15,7 +16,7 @@ link-libz-static = ["libz-sys/static"]
 
 [dependencies]
 libc = { workspace = true }
-libz-sys = { version = "=1.1.16", optional = true }
+libz-sys = { version = "1.1.16", optional = true }
 
 [build-dependencies]
 libpng-src = { workspace = true }
