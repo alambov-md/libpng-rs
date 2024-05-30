@@ -16,6 +16,7 @@
 use libc::{time_t, tm, FILE};
 
 #[cfg(feature = "link-libz")]
+#[allow(clippy::single_component_path_imports)]
 #[allow(unused_imports)]
 // Used for linking only
 use libz_sys;
