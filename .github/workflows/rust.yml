@@ -62,7 +62,7 @@ jobs:
   
   test-android:
 
-    runs-on: macos-12
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout with submodules
@@ -88,11 +88,16 @@ jobs:
       with:
         java-version: 17
         distribution: "temurin"
+    - name: Enable KVM group perms
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
     - name: Run connected tests
       uses: ReactiveCircus/android-emulator-runner@v2
       with:
         api-level: 30
         target: google_apis
         arch: x86_64
-        script: ./AndroidTests/gradlew connectedAndroidTest
+        script: cd /AndroidTests && ./gradlew connectedAndroidTest
 
