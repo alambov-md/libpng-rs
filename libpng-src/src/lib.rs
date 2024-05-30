@@ -143,10 +143,7 @@ pub fn build_artifact(target_str: &str, working_dir: &Path) -> Result<Artifacts,
     create_dir_all(&lib_dir)?;
     copy(library_path, lib_dir.join(&library_filename))?;
     // Cleanup
-    remove_dir_all(build_dir).map_or_else(
-        |_| println!("'libpng-src' cannot clean build directoey"),
-        |f| f,
-    );
+    remove_dir_all(build_dir).unwrap_or_else(|_| println!("'libpng-src' cannot clean build directoey"));
 
     Ok(Artifacts {
         root_dir,
@@ -285,7 +282,7 @@ fn target_specific_cmake_options(target_str: &str) -> Result<Vec<OsString>, Box<
     }
 
     // Linux
-    return Ok(vec![]);
+    Ok(vec![])
 }
 
 fn apple_specific_cmake_options(target_str: &str) -> Result<Vec<OsString>, Box<dyn Error>> {

@@ -3,8 +3,8 @@ Cargo packages suite for 'libpng' library usage in Rust.
 
 ## Goal
 Main goal of this workspace is educational. It describes a way how to replicate cross-platrform Rust library with C++ dependency for all major mobile and desktop OS in a testable manner.
-Rust **libping** wrapper library is build and tested automatically for Linux/Windows/macOS/iOS/Android on each PR both with unit and integration tests. For mobile testing mobile simulators are used. C++ code compilation, FFI and linking issues are addressed.
-For the test pipeline see [rust.yml](github/workflows/rust.yml)
+Rust **libping** wrapper library is linted, built and tested automatically for Linux/Windows/macOS/iOS/Android on each PR both with unit and integration tests. For mobile testing mobile simulators are used. C++ code compilation, FFI and linking issues are addressed.
+For the CI test pipeline see [rust.yml](github/workflows/rust.yml)
 
 ## Content
 Main packages in the workspace are:

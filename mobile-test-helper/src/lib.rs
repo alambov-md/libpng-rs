@@ -3,6 +3,7 @@ use std::ptr::{null, null_mut};
 use libc::{c_char, c_void};
 use libpng_vendored_sys::*;
 
+#[allow(clippy::missing_safety_doc)]
 #[no_mangle]
 pub unsafe extern "C" fn test_read_png_from_memory(buffer: *const c_void, len: usize) -> i32 {
     let mut image = empty_image();
@@ -28,9 +29,10 @@ pub unsafe extern "C" fn test_read_png_from_memory(buffer: *const c_void, len: u
 
     png_image_free(&mut *image);
 
-    return status;
+    status
 }
 
+#[allow(clippy::missing_safety_doc)]
 #[no_mangle]
 pub unsafe extern "C" fn test_read_from_png_file_to_memory(path_ptr: *const c_char) -> i32 {
     let mut image = empty_image();
@@ -56,7 +58,7 @@ pub unsafe extern "C" fn test_read_from_png_file_to_memory(path_ptr: *const c_ch
 
     png_image_free(&mut *image);
 
-    return status;
+    status
 }
 
 fn empty_image() -> Box<png_image> {

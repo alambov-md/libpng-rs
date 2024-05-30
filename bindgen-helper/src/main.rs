@@ -1,6 +1,5 @@
 use std::{env::temp_dir, fs::write, path::PathBuf};
 
-use bindgen;
 use guess_host_triple::guess_host_triple;
 use libpng_src::build_artifact;
 

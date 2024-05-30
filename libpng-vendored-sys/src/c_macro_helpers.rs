@@ -20,7 +20,7 @@ pub fn PNG_IMAGE_PIXEL_(test: impl FnOnce(u32) -> usize, fmt: u32) -> usize {
     if (fmt & PNG_FORMAT_FLAG_COLORMAP) > 0 {
         1
     } else {
-        test(fmt) as usize
+        test(fmt)
     }
 }
 
