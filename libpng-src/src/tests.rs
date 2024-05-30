@@ -75,7 +75,10 @@ fn test_native() -> Result<(), Box<dyn Error>> {
 #[test]
 fn test_link_name_not_win() {
     let assert_combination = |file_name: &str, expectation: &str| {
-        assert_eq!(link_name(file_name.to_string(), "linux"), expectation.to_string())
+        assert_eq!(
+            link_name(file_name.to_string(), "linux"),
+            expectation.to_string()
+        )
     };
 
     assert_combination("libpng.a", "png");
@@ -86,7 +89,10 @@ fn test_link_name_not_win() {
 #[test]
 fn test_link_name_win() {
     let assert_combination = |file_name: &str, expectation: &str| {
-        assert_eq!(link_name(file_name.to_string(), "windows"), expectation.to_string())
+        assert_eq!(
+            link_name(file_name.to_string(), "windows"),
+            expectation.to_string()
+        )
     };
 
     assert_combination("libpng.lib", "libpng");

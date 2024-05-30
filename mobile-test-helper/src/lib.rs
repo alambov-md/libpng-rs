@@ -3,12 +3,6 @@ use std::ptr::{null, null_mut};
 use libc::{c_char, c_void};
 use libpng_vendored_sys::*;
 
-#[allow(dead_code)]
-#[path = "../../../libpng-vendored-sys/tests/c_macro_helpers.rs"]
-mod c_macro_helpers;
-
-use c_macro_helpers::PNG_IMAGE_SIZE;
-
 #[no_mangle]
 pub unsafe extern "C" fn test_read_png_from_memory(buffer: *const c_void, len: usize) -> i32 {
     let mut image = empty_image();

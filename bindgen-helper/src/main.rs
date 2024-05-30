@@ -21,9 +21,13 @@ const MANUAL_BEGINNING: &str = "//! Cargo package for compiling [libpng](https:/
 
 use libc::{time_t, tm, FILE};
 
+#[cfg(feature = \"link-libz\")]
 #[allow(unused_imports)]
 // Used for linking only
 use libz_sys;
+
+mod c_macro_helpers;
+pub use c_macro_helpers::*;
 
 ";
 

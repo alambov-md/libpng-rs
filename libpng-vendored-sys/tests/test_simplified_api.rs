@@ -9,11 +9,9 @@ use libc::c_void;
 
 use libpng_vendored_sys::{
     png_image, png_image_begin_read_from_file, png_image_begin_read_from_memory,
-    png_image_finish_read, png_image_free, PNG_FORMAT_RGBA, PNG_IMAGE_VERSION,
+    png_image_finish_read, png_image_free, PNG_FORMAT_RGBA, PNG_IMAGE_FAILED, PNG_IMAGE_SIZE,
+    PNG_IMAGE_VERSION,
 };
-
-mod c_macro_helpers;
-use c_macro_helpers::*;
 
 #[test]
 fn test_png_image_read_from_file() {

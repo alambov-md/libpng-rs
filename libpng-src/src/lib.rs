@@ -316,7 +316,10 @@ fn apple_specific_cmake_options(target_str: &str) -> Result<Vec<OsString>, Box<d
     param_vec.try_into_os_string()
 }
 
-fn androdid_specific_cmake_options(target_str: &str, host_os_str: &str) -> Result<Vec<OsString>, Box<dyn Error>> {
+fn androdid_specific_cmake_options(
+    target_str: &str,
+    host_os_str: &str,
+) -> Result<Vec<OsString>, Box<dyn Error>> {
     let build_arch = match target_str {
         "armv7-linux-androideabi" => Ok("armeabi-v7a"),
         "aarch64-linux-android" => Ok("arm64-v8a"),
@@ -359,7 +362,8 @@ fn execute(command: &str, args: &[OsString], cwd: &Path) -> Result<(), Box<dyn E
             "Command '{}' failed with status code {}\nError: {}",
             command,
             output.status.code().unwrap_or(-1),
-            String::from_utf8_lossy(&output.stderr)))?;
+            String::from_utf8_lossy(&output.stderr)
+        ))?;
     }
 
     let args_vec: Vec<&str> = args

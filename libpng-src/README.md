@@ -2,7 +2,7 @@
 Helper Cargo package for compiling [libpng](https://github.com/pnggroup/libpng) into a static C library. Meant to be used as build dependency for dufferent `-sys` or `-vendored` packages. Does not provide directly usable **libpng** functionality or bindings.
 
 ## Provided version
-Compiles **libpng** with version `1.6.43`. Original source code with the license is provided in **libpng** folder without any modifications.
+Compiles **libpng** with version `1.6.44.git`. Original source code with the license is provided in **libpng** folder without any modifications.
 
 ## Currenlly supported OS and targets
 Expected to work for:
@@ -35,6 +35,11 @@ Invoke Cargo via Developer Powershell or Developer Command Prompt for correct wo
 * CMake - install via https://cmake.org/ or [Homebrew](https://brew.sh/);
 * make - vendored by OS
 * Xcode - https://developer.apple.com/xcode/
+* **zlib**` - vendored by OS
+
+### Android
+* Android Studio - https://developer.android.com/studio
+* Cargo NDK - use it instead of Cargo - https://github.com/bbqsrc/cargo-ndk
 * **zlib**` - vendored by OS
 
 ### Testing

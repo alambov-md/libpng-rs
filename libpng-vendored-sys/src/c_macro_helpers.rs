@@ -1,5 +1,5 @@
 #![allow(non_snake_case)]
-use libpng_vendored_sys::{
+use crate::{
     png_image, PNG_FORMAT_FLAG_ALPHA, PNG_FORMAT_FLAG_COLOR, PNG_FORMAT_FLAG_COLORMAP,
     PNG_FORMAT_FLAG_LINEAR,
 };
