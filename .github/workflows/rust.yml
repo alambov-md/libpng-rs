@@ -62,7 +62,7 @@ jobs:
   
   test-android:
 
-    runs-on: macos-13
+    runs-on: macos-latest
 
     steps:
     - name: Checkout with submodules
@@ -108,6 +108,5 @@ jobs:
       uses: ReactiveCircus/android-emulator-runner@v2
       with:
         api-level: 30
-        target: default
         arch: arm64-v8a
         script: cd AndroidTests && ./gradlew connectedAndroidTest
