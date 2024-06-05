@@ -62,7 +62,7 @@ jobs:
   
   test-android:
 
-    runs-on: flyci-macos-14-m2
+    runs-on: macos-14
 
     steps:
     - name: Checkout with submodules
