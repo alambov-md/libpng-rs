@@ -62,7 +62,7 @@ jobs:
   
   test-android:
 
-    runs-on: macos-13-arm64
+    runs-on: macos-latest-xlarge
 
     steps:
     - name: Checkout with submodules
