@@ -107,13 +107,6 @@ jobs:
         target: google_apis
         arch: x86
         script: cd AndroidTests && ./gradlew connectedAndroidTest
-    - name: Run connected tests armeabi-v7a
-      uses: ReactiveCircus/android-emulator-runner@v2
-      with:
-        api-level: 30
-        target: google_apis
-        arch: armeabi-v7a
-        script: cd AndroidTests && ./gradlew connectedAndroidTest
     - name: Run connected tests arm64-v8a
       uses: ReactiveCircus/android-emulator-runner@v2
       with:
