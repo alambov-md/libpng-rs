@@ -19,6 +19,8 @@ Expected to work for:
 * iOS, including simulators (cross-compilation from macOS host): `x86_64-apple-ios`, `aarch64-apple-ios`, `aarch64-apple-ios-sim`
 * Android (cross-compilation from Linux and macOS hosts): `armv7-linux-androideabi`, `aarch64-linux-android`, `i686-linux-android`, `x86_64-linux-android`
 
+Tested before upload for all the targets, except `aarch64-unknown-linux-gnu`, `aarch64-pc-windows-msvc` and `armv7-linux-androideabi`.
+
 ## Authors
 **Rust code and scripts:** Alexandr (Alex) Lambov <alex.lambov.md@gmail.com>, &copy; 2024
 
