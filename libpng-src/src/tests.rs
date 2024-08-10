@@ -31,6 +31,7 @@ fn test_execute_command_fail() {
 #[test]
 fn test_native() -> Result<(), Box<dyn Error>> {
     let tmp_dir = temp_dir().join("libpng-sys-test");
+    let _ = remove_dir_all(&tmp_dir);
     create_dir_all(&tmp_dir)?;
 
     let source_path = source_path();

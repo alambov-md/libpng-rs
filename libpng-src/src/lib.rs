@@ -12,7 +12,10 @@
 //! `i686-linux-android`, `x86_64-linux-android`
 
 use std::{
-    env::consts::{ARCH as HOST_ARCH, OS as HOST_OS},
+    env::{
+        self,
+        consts::{ARCH as HOST_ARCH, OS as HOST_OS},
+    },
     error::Error,
     ffi::OsString,
     fs::{self, copy, create_dir, create_dir_all, remove_dir_all},
@@ -202,7 +205,7 @@ pub fn compile_lib(target_str: &str, working_dir: &Path) -> Result<PathBuf, Box<
         working_dir,
     )?;
 
-    artifact_path(working_dir)
+    artifact_path(working_dir, target_str)
 }
 
 trait TryIntoVecOsString<T, E> {
@@ -256,8 +259,8 @@ fn androd_targets() -> Vec<&'static str> {
 }
 
 fn cmake_options(target_str: &str) -> Result<Vec<OsString>, Box<dyn Error>> {
-    let mut options = common_cmake_options();
-    options.append(&mut target_specific_cmake_options(target_str)?);
+    let mut options = target_specific_cmake_options(target_str)?;
+    options.append(&mut common_cmake_options());
 
     Ok(options)
 }
@@ -330,11 +333,22 @@ fn androdid_specific_cmake_options(
 
     let arch_param_string = format!("-DCMAKE_ANDROID_ARCH_ABI={build_arch}");
 
-    let mut param_vec = vec!["-DCMAKE_SYSTEM_NAME=Android", arch_param_string.as_str()];
+    let mut param_vec: Vec<&str> = vec![];
 
+    let toolchain_param;
     if host_os_str == "windows" {
-        param_vec.push("-DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY");
+        toolchain_param = format!(
+            "{}\\build\\cmake\\android.toolchain.cmake",
+            env::var("ANDROID_NDK")?
+        );
+        let mut win_params = vec!["-G", "NMake Makefiles", "--toolchain", &toolchain_param];
+        param_vec.append(&mut win_params);
     }
+
+    param_vec.append(&mut vec![
+        "-DCMAKE_SYSTEM_NAME=Android",
+        arch_param_string.as_str(),
+    ]);
 
     param_vec.try_into_os_string()
 }
@@ -375,15 +389,16 @@ fn execute(command: &str, args: &[OsString], cwd: &Path) -> Result<(), Box<dyn E
     Ok(())
 }
 
-fn artifact_path(working_dir: &Path) -> Result<PathBuf, Box<dyn Error>> {
-    let filename = match HOST_OS {
-        "windows" => "Release\\libpng16_static.lib",
-        _ => "libpng16.a",
+fn artifact_path(working_dir: &Path, target_str: &str) -> Result<PathBuf, Box<dyn Error>> {
+    let filename = if HOST_OS == "windows" && !androd_targets().contains(&target_str) {
+        "Release\\libpng16_static.lib"
+    } else {
+        "libpng16.a"
     };
 
     let artifact_path = working_dir.join(filename);
 
-    if !artifact_path.exists() {
+    if !artifact_path.is_file() {
         return Err(format!("Artifact not found at path: {}", artifact_path.display()).into());
     }
 
